@@ -1,3 +1,7 @@
+## Complete Project Documentation
+
+[Download the Complete CI/CD Project Guidebook](docs/CI_CD_DevOps_Project_Guidebook.docx)
+
 \# Automated CI/CD Pipeline with Docker, GitHub Actions, PowerShell \& Kubernetes
 
 
