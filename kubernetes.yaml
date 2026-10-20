@@ -1,0 +1,42 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ci-cd-demo
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ci-cd-demo
+  template:
+    metadata:
+      labels:
+        app: ci-cd-demo
+    spec:
+      containers:
+        - name: ci-cd-demo
+          image: ghcr.io/chiazanwadike-png/ci-cd-demo:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ci-cd-demo-service
+  namespace: development
+spec:
+  type: ClusterIP
+  selector:
+    app: ci-cd-demo
+  ports:
+    - port: 80
+      targetPort: 80
