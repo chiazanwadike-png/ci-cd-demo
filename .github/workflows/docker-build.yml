@@ -9,11 +9,11 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build Docker image
         run: docker build -t ci-cd-demo:test .
@@ -21,14 +21,21 @@ jobs:
       - name: Run Docker container
         run: docker run -d --name ci-cd-test -p 8083:80 ci-cd-demo:test
 
+      - name: Show running containers
+        run: docker ps -a
+
       - name: Test application
         run: |
           curl --fail --silent --show-error \
             --retry 10 \
             --retry-connrefused \
             --retry-delay 2 \
-            http://localhost:8083/ \
-            | grep -Fq "My First CI/CD Deployment!"
+            --output response.html \
+            http://127.0.0.1:8083/
 
-      - name: Show running containers
-        run: docker ps
+          cat response.html
+          grep -F "My First CI/CD Deployment!" response.html
+
+      - name: Show logs if something fails
+        if: failure()
+        run: docker logs ci-cd-test
