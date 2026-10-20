@@ -28,17 +28,40 @@ jobs:
       - name: Show running containers
         run: docker ps -a
 
+     
       - name: Test application
         run: |
-          curl --fail --silent --show-error \
-            --retry 10 \
-            --retry-connrefused \
-            --retry-delay 2 \
-            --output response.html \
-            http://127.0.0.1:8083/
+          echo "Waiting for NGINX to start..."
 
+          ready=false
+
+          for attempt in {1..20}; do
+            if curl --fail --silent --show-error \
+              --max-time 5 \
+              --output response.html \
+              http://127.0.0.1:8083/; then
+              ready=true
+              break
+            fi
+
+            echo "Attempt $attempt failed. Retrying..."
+            sleep 2
+          done
+
+          if [ "$ready" != true ]; then
+            echo "NGINX did not become ready."
+            docker ps -a
+            docker logs ci-cd-test
+            exit 1
+          fi
+
+          echo "NGINX is responding!"
           cat response.html
-          grep -F "My First CI/CD Deployment!" response.html
+
+          grep -Fq "My First CI/CD Deployment!" response.html
+
+          echo "Website test passed!"
+
 
       - name: Log in to GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
